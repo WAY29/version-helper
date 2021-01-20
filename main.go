@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	__version__ = "1.1.0"
+	__version__ = "2.0.0"
 )
 
 func main() {
@@ -22,6 +22,6 @@ func main() {
 	app.Command("major", "Major version upgrade", cmd.MajorCmd)
 	app.Command("minor", "Minor version upgrade", cmd.MinorCmd)
 	app.Command("patch", "Patch version upgrade", cmd.PatchCmd)
-
+	app.Command("banner", "Set banner for version", cmd.BannerCmd)
 	app.Run(os.Args)
 }

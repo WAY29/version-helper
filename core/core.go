@@ -17,6 +17,7 @@ const (
 	UPGRADE_MAJOR = iota
 	UPGRADE_MINOR
 	UPGRADE_PATCH
+	UPGRADE_NO
 )
 
 type Config struct {
@@ -46,28 +47,47 @@ func Load(filePath string) *Config {
 	return Parse(data)
 }
 
-func UpgradeVersion(version string, flag int) string {
+func ParseVersion(oldVersion string) (string, string) {
+	version := oldVersion
+	banner := ""
+	if strings.Contains(oldVersion, "-") {
+		tempStringSlice := strings.Split(oldVersion, "-")
+		version = tempStringSlice[0]
+		banner = tempStringSlice[1]
+	}
+	return version, banner
+}
+
+func UpgradeVersion(config *Config, banner string, flag int) string {
+	version, _ := ParseVersion(config.VersionHelper.Version)
+	// ? update cersion
 	versionSlice := strings.Split(version, ".")
 	if len(versionSlice) < 3 {
 		utils.Errorf("Version invalid", 1)
 	}
-	update_int, err := strconv.Atoi(versionSlice[flag])
-	if err != nil {
-		utils.Errorf("Get new version : "+" : "+err.Error(), 1)
+	if flag < UPGRADE_NO {
+		update_int, err := strconv.Atoi(versionSlice[flag])
+		if err != nil {
+			utils.Errorf("Get new version : "+" : "+err.Error(), 1)
+		}
+		update_int += 1
+		versionSlice[flag] = strconv.Itoa(update_int)
+		if flag <= UPGRADE_MINOR {
+			versionSlice[2] = "0"
+		}
+		if flag <= UPGRADE_MAJOR {
+			versionSlice[1] = "0"
+		}
 	}
-	update_int += 1
-	versionSlice[flag] = strconv.Itoa(update_int)
-	if flag <= UPGRADE_MINOR {
-		versionSlice[2] = "0"
-	}
-	if flag <= UPGRADE_MAJOR {
-		versionSlice[1] = "0"
-	}
+	// ? add banner
 	version = strings.Join(versionSlice, ".")
+	if banner != "" {
+		version += "-" + banner
+	}
 	return version
 }
 
-func Update(tomlFilePath string, config *Config) {
+func Update(tomlFilePath string, oldVersion string, config *Config) {
 	// ? update .version.toml
 	s, err := toml.Marshal(config)
 	if err != nil {
@@ -91,10 +111,12 @@ func Update(tomlFilePath string, config *Config) {
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
-		searchReg, err := regexp.Compile(strings.Replace(search, "{}", "(.*)", -1))
+		// ? replace search {}
+		search = strings.Replace(search, "{}", oldVersion, -1)
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
+		// ? relace `` to execute command
 		shellCommandFlagCount := strings.Count(replace, "`")
 		if shellCommandFlagCount > 0 && shellCommandFlagCount%2 == 0 {
 			reg, err := regexp.Compile("`(.*?)`")
@@ -112,14 +134,21 @@ func Update(tomlFilePath string, config *Config) {
 			outputString := strings.TrimSpace(string(output[:]))
 			replace = reg.ReplaceAllString(replace, outputString)
 		}
+		// ? replace replace {}
 		replace = strings.Replace(replace, "{}", version, -1)
-		data = searchReg.ReplaceAll(data, []byte(replace))
+		// ? whether file contents has search contents
+		if !bytes.Contains(data, []byte(search)) {
+			utils.Errorf("Update "+location+" : "+search+" not found", 1)
+		}
+		// ? replace
+		data = bytes.Replace(data, []byte(search), []byte(replace), -1)
 		err = ioutil.WriteFile(location, data, 0666)
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
 		utils.Checkf("Update "+location, 1)
 	}
+	// ? git tag
 	if config.VersionHelper.TagFlag {
 		stat, err := os.Stat(".git")
 		if err != nil {

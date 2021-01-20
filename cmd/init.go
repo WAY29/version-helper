@@ -9,8 +9,8 @@ import (
 )
 
 const tomlTemplate = `[main]
-  version = "{{initVersion}}"
-  tag     = false
+  version   = "{{initVersion}}"
+  tag       = false
 [[operate]]
   location = "pyproject.toml"
   search   = "version = \"{}\""

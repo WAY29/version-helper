@@ -1,4 +1,4 @@
-# Version-Helper-1.1.0
+# Version-Helper-2.0.0
 
 A helper for version manage
 
@@ -62,4 +62,19 @@ remove some noise success message
 ```
 Change the regular expression from non-greedy mode to greedy mode
 Change some output
+```
+
+### V2.0.0
+```
+Change some output
+Allow adding version number,pattern is {version}-{banner}
+Add new subcommand: banner
+
+Usage: version-helper banner [BANNER]
+
+Set banner for version, set the banner to empty to clear the banner
+
+Arguments:     
+  BANNER       banner you want to set
+
 ```

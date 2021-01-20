@@ -1,6 +1,6 @@
 [main]
-  tag = false
-  version = "1.1.0"
+  tag = true
+  version = "2.0.0"
 
 [[operate]]
   location = "main.go"
