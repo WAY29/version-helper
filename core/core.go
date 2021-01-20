@@ -86,6 +86,9 @@ func Update(tomlFilePath string, config *Config) {
 	// ? update action
 	for _, v := range config.Operate {
 		location, search, replace := v.Location, v.Search, v.Replace
+		if location == "" || search == "" {
+			continue
+		}
 		data, err := ioutil.ReadFile(location)
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
@@ -134,7 +137,7 @@ func Update(tomlFilePath string, config *Config) {
 				utils.Errorf("git tag "+version, 1)
 			}
 		}
-		utils.Checkf("git tag"+version, 1)
+		utils.Checkf("git tag "+version, 1)
 	}
 	utils.Celebrationf("Update version to "+version+" !", 0)
 }

@@ -1,4 +1,13 @@
 [main]
-  version = "1.0.0"
-  tag     = false
+  tag = false
+  version = "1.0.1"
+
 [[operate]]
+  location = "main.go"
+  replace = "__version__ = \"{}\""
+  search = "__version__ = \"{}\""
+
+[[operate]]
+  location = "releases/build.bat"
+  replace = "version-helper-{}"
+  search = "version-helper-{}"

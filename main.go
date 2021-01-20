@@ -7,9 +7,13 @@ import (
 	cli "github.com/jawher/mow.cli"
 )
 
+const (
+	__version__ = "1.0.1"
+)
+
 func main() {
 	app := cli.App("version-helper", "A helper for version manage")
-	app.Version("v version", "version-helper Version: 1.0.0")
+	app.Version("v version", "version-helper Version: "+__version__)
 
 	app.Spec = "[-v]"
 
