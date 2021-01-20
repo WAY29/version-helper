@@ -2,6 +2,8 @@
 
 A helper for version manage
 
+***version 1.0.2***
+
 ## Usage
 ```
 Usage: version-helper [-v] COMMAND [arg...]
@@ -52,4 +54,8 @@ version-helper minor
 ```
 fix a bug that failed when operate.location is empty
 fix a output when tag is true
+```
+### V1.0.2
+```
+remove some noise success message
 ```

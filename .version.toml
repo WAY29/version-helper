@@ -1,6 +1,6 @@
 [main]
   tag = false
-  version = "1.0.1"
+  version = "1.0.2"
 
 [[operate]]
   location = "main.go"
@@ -9,5 +9,10 @@
 
 [[operate]]
   location = "releases/build.bat"
-  replace = "version-helper-{}"
-  search = "version-helper-{}"
+  replace = "version-helper-{}\""
+  search = "version-helper-{}\""
+
+[[operate]]
+  location = "README.md"
+  replace = "\*\*\*version {}\*\*\*"
+  search = "\*\*\*version {}\*\*\*"

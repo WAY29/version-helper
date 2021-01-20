@@ -42,7 +42,6 @@ func Load(filePath string) *Config {
 	if err != nil {
 		utils.Errorf("Load"+filePath+" : "+err.Error(), 1)
 	}
-	utils.Checkf("Load "+filePath, 1)
 
 	return Parse(data)
 }
@@ -65,7 +64,6 @@ func UpgradeVersion(version string, flag int) string {
 		versionSlice[1] = "0"
 	}
 	version = strings.Join(versionSlice, ".")
-	utils.Checkf("Get new version", 1)
 	return version
 }
 
