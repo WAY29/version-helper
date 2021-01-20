@@ -91,7 +91,7 @@ func Update(tomlFilePath string, config *Config) {
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
-		searchReg, err := regexp.Compile(strings.Replace(search, "{}", "(.*?)", -1))
+		searchReg, err := regexp.Compile(strings.Replace(search, "{}", "(.*)", -1))
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
@@ -110,7 +110,6 @@ func Update(tomlFilePath string, config *Config) {
 				utils.Errorf("Update "+location+" : "+err.Error(), 1)
 			}
 			outputString := strings.TrimSpace(string(output[:]))
-
 			replace = reg.ReplaceAllString(replace, outputString)
 		}
 		replace = strings.Replace(replace, "{}", version, -1)

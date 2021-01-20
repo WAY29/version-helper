@@ -1,8 +1,6 @@
-# Version-Helper
+# Version-Helper-1.1.0
 
 A helper for version manage
-
-***version 1.0.2***
 
 ## Usage
 ```
@@ -58,4 +56,10 @@ fix a output when tag is true
 ### V1.0.2
 ```
 remove some noise success message
+```
+
+### V1.1.0
+```
+Change the regular expression from non-greedy mode to greedy mode
+Change some output
 ```

@@ -1,6 +1,6 @@
 [main]
   tag = false
-  version = "1.0.2"
+  version = "1.1.0"
 
 [[operate]]
   location = "main.go"
@@ -14,5 +14,5 @@
 
 [[operate]]
   location = "README.md"
-  replace = "\*\*\*version {}\*\*\*"
-  search = "\*\*\*version {}\*\*\*"
+  replace = "# Version-Helper-{}"
+  search = "# Version-Helper-{}"

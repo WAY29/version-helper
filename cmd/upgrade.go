@@ -10,7 +10,7 @@ func MajorCmd(cmd *cli.Cmd) {
 	cmd.Spec = ""
 
 	cmd.Action = func() {
-		utils.Workf("Loading .version.toml", 0)
+		utils.Workf("Upgrade...", 0)
 		config := core.Load(".version.toml")
 		newVersion := core.UpgradeVersion(config.VersionHelper.Version, core.UPGRADE_MAJOR)
 		config.VersionHelper.Version = newVersion
@@ -22,7 +22,7 @@ func MinorCmd(cmd *cli.Cmd) {
 	cmd.Spec = ""
 
 	cmd.Action = func() {
-		utils.Workf("Loading .version.toml", 0)
+		utils.Workf("Upgrade...", 0)
 		config := core.Load(".version.toml")
 		newVersion := core.UpgradeVersion(config.VersionHelper.Version, core.UPGRADE_MINOR)
 		config.VersionHelper.Version = newVersion
@@ -34,7 +34,7 @@ func PatchCmd(cmd *cli.Cmd) {
 	cmd.Spec = ""
 
 	cmd.Action = func() {
-		utils.Workf("Loading .version.toml", 0)
+		utils.Workf("Upgrade...", 0)
 		config := core.Load(".version.toml")
 		newVersion := core.UpgradeVersion(config.VersionHelper.Version, core.UPGRADE_PATCH)
 		config.VersionHelper.Version = newVersion
@@ -50,7 +50,7 @@ func SetCmd(cmd *cli.Cmd) {
 	)
 
 	cmd.Action = func() {
-		utils.Workf("Loading .version.toml", 0)
+		utils.Workf("Upgrade...", 0)
 		config := core.Load(".version.toml")
 		config.VersionHelper.Version = *newVersion
 		core.Update(".version.toml", config)
