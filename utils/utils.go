@@ -42,6 +42,22 @@ func init() {
 	}
 }
 
+func WrapRed(msg string) string {
+	return "\033[1;31m" + msg + "\033[0m"
+}
+
+func WrapGreen(msg string) string {
+	return "\033[1;32m" + msg + "\033[0m"
+}
+
+func WrapYellow(msg string) string {
+	return "\033[1;33m" + msg + "\033[0m"
+}
+
+func WrapCyan(msg string) string {
+	return "\033[1;36m" + msg + "\033[0m"
+}
+
 func printEmoji(msg string, level, flag int) {
 	sign := EMOJI_DICT[flag][0]
 	if SUPPORT_UNICODE {

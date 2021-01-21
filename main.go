@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	__version__ = "2.0.0"
+	__version__ = "2.1.0"
 )
 
 func main() {
@@ -18,6 +18,7 @@ func main() {
 	app.Spec = "[-v]"
 
 	app.Command("init", "Create .version.toml to initialize", cmd.InitCmd)
+	app.Command("info", "Show version information", cmd.InfoCmd)
 	app.Command("set", "Set version", cmd.SetCmd)
 	app.Command("major", "Major version upgrade", cmd.MajorCmd)
 	app.Command("minor", "Minor version upgrade", cmd.MinorCmd)

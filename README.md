@@ -1,4 +1,4 @@
-# Version-Helper-2.0.0
+# Version-Helper-2.1.0
 
 A helper for version manage
 
@@ -32,13 +32,19 @@ or download releases from github releases
 ```
 go get github.com/WAY29/version-helper
 cd project_dir/
-version-helper init ; version is [major].[minor].[patch]
+version-helper init ; version is [major].[minor].[patch]-{banner}
 ; some bug fixes
 version-helper patch
 ; some new updates
 version-helper minor
-; some major updates
+; some major updates with banner
+version-helper major alpha
+; set banner
+version-helper banner beta
+; show version information
+version-helepr info
 ```
+In `.version.toml`, you can use \`\` to command execution for `[[Operate]].replece` just like bash, but does not support nesting.
 
 ## Depends
 - [go-toml](https://github.com/pelletier/go-toml)
@@ -77,4 +83,13 @@ Set banner for version, set the banner to empty to clear the banner
 Arguments:     
   BANNER       banner you want to set
 
+```
+
+### V2.1.0
+```
+Add new subcommand: info
+
+Usage: version-helper info
+
+Show version information
 ```
