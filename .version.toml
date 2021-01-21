@@ -1,6 +1,7 @@
 [main]
-  tag = true
-  version = "2.1.0"
+  serialize = "{version}-{banner}"
+  tag = false
+  version = "3.0.0"
 
 [[operate]]
   location = "main.go"

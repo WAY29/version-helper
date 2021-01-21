@@ -11,6 +11,7 @@ import (
 const tomlTemplate = `[main]
   version   = "{{initVersion}}"
   tag       = false
+  serialize = "{version}-{banner}"
 [[operate]]
   location = "pyproject.toml"
   search   = "version = \"{}\""

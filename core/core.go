@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -20,6 +21,8 @@ const (
 	UPGRADE_NO
 )
 
+var EscapeStringSlice = []string{"*", ".", "?", "+", "$", "^", "[", "]", "(", ")", "|", "\\", "/"}
+
 type Config struct {
 	Operate []struct {
 		Location string `toml:"location"`
@@ -27,48 +30,104 @@ type Config struct {
 		Replace  string `toml:"replace"`
 	} `toml:"operate"`
 	VersionHelper struct {
-		Version string `toml:"version"`
-		TagFlag bool   `toml:"tag"`
+		Version   string `toml:"version"`
+		TagFlag   bool   `toml:"tag"`
+		Serialize string `toml:"serialize"`
 	} `toml:"main"`
 }
 
-func Parse(data []byte) *Config {
-	config := Config{}
-	toml.Unmarshal(data, &config)
-	return &config
-}
-
-func Load(filePath string) *Config {
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		utils.Errorf("Load"+filePath+" : "+err.Error(), 1)
+func IsPureVersion(version string) bool {
+	r, _ := regexp.Compile("^\\d+\\.\\d+.\\d+$")
+	if r.FindString(version) != "" {
+		return true
 	}
-
-	return Parse(data)
+	return false
 }
 
-func ParseVersion(oldVersion string) (string, string) {
+func parseVersionBySerialize(regString, searchString string) (resultStringMap map[string]string, err error) {
+	resultStringMap = make(map[string]string)
+	// ? chefk if pure version
+	if IsPureVersion(searchString) {
+		resultStringMap["version"] = searchString
+		resultStringMap["banner"] = ""
+		return
+	}
+	// ? get all signs
+	r, _ := regexp.Compile("\\{(.*?)\\}")
+	matchStringDoubleSlice := r.FindAllStringSubmatch(regString, -1)
+	// ? get a new regular expression, and escape
+	replacedRegString := regString
+	for _, v := range EscapeStringSlice {
+		replacedRegString = strings.ReplaceAll(replacedRegString, v, "\\"+v)
+	}
+	replacedRegString = strings.ReplaceAll(replacedRegString, "\\\\", "\\")
+	replacedRegString = "^" + r.ReplaceAllString(replacedRegString, "(.*)") + "$"
+	// ? check if expression is valid
+	r, err = regexp.Compile(replacedRegString)
+	if err != nil {
+		return
+	}
+	// ? get result
+	matchStringSlice := r.FindStringSubmatch(searchString)
+	if len(matchStringSlice) < 2 {
+		err = fmt.Errorf("Parse failed")
+		return
+	}
+	for i := range matchStringSlice[1:] {
+		resultStringMap[matchStringDoubleSlice[i][1]] = matchStringSlice[i+1]
+	}
+	return
+}
+
+func ParseVersion(serialize, oldVersion string) (string, string) {
 	version := oldVersion
 	banner := ""
-	if strings.Contains(oldVersion, "-") {
-		tempStringSlice := strings.Split(oldVersion, "-")
-		version = tempStringSlice[0]
-		banner = tempStringSlice[1]
+	resultMap, err := parseVersionBySerialize(serialize, oldVersion)
+	if err != nil {
+		utils.Errorf("Get new verion: "+err.Error(), 1)
+	}
+	if resultMap["version"] != "" {
+		version = resultMap["version"]
+	}
+	if resultMap["banner"] != "" {
+		banner = resultMap["banner"]
 	}
 	return version, banner
 }
 
-func UpgradeVersion(config *Config, banner string, flag int) string {
-	version, _ := ParseVersion(config.VersionHelper.Version)
-	// ? update cersion
-	versionSlice := strings.Split(version, ".")
-	if len(versionSlice) < 3 {
-		utils.Errorf("Version invalid", 1)
+func GenerateVersion(version, banner, serialize string) (string, error) {
+	isPureVersion := IsPureVersion(version)
+	// ? check version
+	if !isPureVersion {
+		return "", fmt.Errorf("Version invalid")
 	}
+	// ? check serialize
+	if !strings.Contains(serialize, "{version}") || !strings.Contains(serialize, "{banner}") {
+		return "", fmt.Errorf("Serialize invalid")
+	}
+	if isPureVersion && banner == "" {
+		return version, nil
+	}
+	result := serialize
+	result = strings.Replace(result, "{version}", version, -1)
+	result = strings.Replace(result, "{banner}", banner, -1)
+	return result, nil
+}
+
+func UpgradeVersion(config *Config, banner string, flag int) (string, error) {
+	serialize := config.VersionHelper.Serialize
+	version, _ := ParseVersion(serialize, config.VersionHelper.Version)
+	// ? check version
+	if !IsPureVersion(version) {
+		err := fmt.Errorf("Version invalid")
+		return "", err
+	}
+	// ? update version
+	versionSlice := strings.Split(version, ".")
 	if flag < UPGRADE_NO {
 		update_int, err := strconv.Atoi(versionSlice[flag])
 		if err != nil {
-			utils.Errorf("Get new version : "+" : "+err.Error(), 1)
+			utils.Errorf("Get new version: "+err.Error(), 1)
 		}
 		update_int += 1
 		versionSlice[flag] = strconv.Itoa(update_int)
@@ -79,24 +138,40 @@ func UpgradeVersion(config *Config, banner string, flag int) string {
 			versionSlice[1] = "0"
 		}
 	}
-	// ? add banner
+	// ? generate version
 	version = strings.Join(versionSlice, ".")
-	if banner != "" {
-		version += "-" + banner
-	}
-	return version
+	return GenerateVersion(version, banner, serialize)
 }
 
-func Update(tomlFilePath string, oldVersion string, config *Config) {
+func ParseConfig(data []byte) *Config {
+	config := Config{}
+	toml.Unmarshal(data, &config)
+	// ? 2.1.0 -> 3.0.0 compatible
+	if config.VersionHelper.Serialize == "" {
+		config.VersionHelper.Serialize = "{version}-{banner}"
+	}
+	return &config
+}
+
+func LoadConfig(filePath string) *Config {
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		utils.Errorf("Load"+filePath+" : "+err.Error(), 1)
+	}
+
+	return ParseConfig(data)
+}
+
+func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	// ? update .version.toml
 	s, err := toml.Marshal(config)
 	if err != nil {
-		utils.Errorf("Update .version.toml"+" : "+err.Error(), 1)
+		utils.Errorf("Update .version.toml: "+err.Error(), 1)
 	}
 	s = bytes.TrimSpace(s)
 	err = ioutil.WriteFile(tomlFilePath, s, 0666)
 	if err != nil {
-		utils.Errorf("Update .version.toml"+" : "+err.Error(), 1)
+		utils.Errorf("Update .version.toml: "+err.Error(), 1)
 	}
 	utils.Checkf("Update .version.toml", 1)
 
@@ -109,12 +184,12 @@ func Update(tomlFilePath string, oldVersion string, config *Config) {
 		}
 		data, err := ioutil.ReadFile(location)
 		if err != nil {
-			utils.Errorf("Update "+location+" : "+err.Error(), 1)
+			utils.Errorf("Update "+location+": "+err.Error(), 1)
 		}
 		// ? replace search {}
 		search = strings.Replace(search, "{}", oldVersion, -1)
 		if err != nil {
-			utils.Errorf("Update "+location+" : "+err.Error(), 1)
+			utils.Errorf("Update "+location+": "+err.Error(), 1)
 		}
 		// ? relace `` to execute command
 		shellCommandFlagCount := strings.Count(replace, "`")
@@ -129,7 +204,7 @@ func Update(tomlFilePath string, oldVersion string, config *Config) {
 			command := exec.Command(args[0], args[1:]...)
 			output, err := command.Output()
 			if err != nil {
-				utils.Errorf("Update "+location+" : "+err.Error(), 1)
+				utils.Errorf("Update "+location+": "+err.Error(), 1)
 			}
 			outputString := strings.TrimSpace(string(output[:]))
 			replace = reg.ReplaceAllString(replace, outputString)

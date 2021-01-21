@@ -15,11 +15,14 @@ func MajorCmd(cmd *cli.Cmd) {
 
 	cmd.Action = func() {
 		utils.Workf("Upgrade...", 0)
-		config := core.Load(".version.toml")
+		config := core.LoadConfig(".version.toml")
 		oldVersion := config.VersionHelper.Version
-		newVersion := core.UpgradeVersion(config, *banner, core.UPGRADE_MAJOR)
+		newVersion, err := core.UpgradeVersion(config, *banner, core.UPGRADE_MAJOR)
+		if err != nil {
+			utils.Errorf("Upgrade version: "+err.Error(), 1)
+		}
 		config.VersionHelper.Version = newVersion
-		core.Update(".version.toml", oldVersion, config)
+		core.UpdateConfig(".version.toml", oldVersion, config)
 	}
 }
 
@@ -32,11 +35,14 @@ func MinorCmd(cmd *cli.Cmd) {
 
 	cmd.Action = func() {
 		utils.Workf("Upgrade", 0)
-		config := core.Load(".version.toml")
+		config := core.LoadConfig(".version.toml")
 		oldVersion := config.VersionHelper.Version
-		newVersion := core.UpgradeVersion(config, *banner, core.UPGRADE_MINOR)
+		newVersion, err := core.UpgradeVersion(config, *banner, core.UPGRADE_MINOR)
+		if err != nil {
+			utils.Errorf("Upgrade version: "+err.Error(), 1)
+		}
 		config.VersionHelper.Version = newVersion
-		core.Update(".version.toml", oldVersion, config)
+		core.UpdateConfig(".version.toml", oldVersion, config)
 	}
 }
 
@@ -48,12 +54,15 @@ func PatchCmd(cmd *cli.Cmd) {
 	)
 
 	cmd.Action = func() {
-		utils.Workf("Upgrade", 0)
-		config := core.Load(".version.toml")
+		utils.Workf("Upgrade version", 0)
+		config := core.LoadConfig(".version.toml")
 		oldVersion := config.VersionHelper.Version
-		newVersion := core.UpgradeVersion(config, *banner, core.UPGRADE_PATCH)
+		newVersion, err := core.UpgradeVersion(config, *banner, core.UPGRADE_PATCH)
+		if err != nil {
+			utils.Errorf("Upgrade version: "+err.Error(), 1)
+		}
 		config.VersionHelper.Version = newVersion
-		core.Update(".version.toml", oldVersion, config)
+		core.UpdateConfig(".version.toml", oldVersion, config)
 	}
 }
 
@@ -65,15 +74,22 @@ func SetCmd(cmd *cli.Cmd) {
 	)
 
 	cmd.Action = func() {
-		utils.Workf("Upgrade", 0)
-		config := core.Load(".version.toml")
+		utils.Workf("Set version", 0)
+		if !core.IsPureVersion(*newVersion) {
+			utils.Errorf("Version invalid", 1)
+		}
+		config := core.LoadConfig(".version.toml")
+		serialize := config.VersionHelper.Serialize
 		oldVersion := config.VersionHelper.Version
-		_, banner := core.ParseVersion(oldVersion)
-		if banner != "" {
-			*newVersion += "-" + banner
+		_, banner := core.ParseVersion(serialize, oldVersion)
+		temp, err := core.GenerateVersion(*newVersion, banner, config.VersionHelper.Serialize)
+		if err == nil {
+			*newVersion = temp
+		} else {
+			utils.Errorf("Upgrade version: "+err.Error(), 1)
 		}
 		config.VersionHelper.Version = *newVersion
-		core.Update(".version.toml", oldVersion, config)
+		core.UpdateConfig(".version.toml", oldVersion, config)
 	}
 }
 
@@ -87,10 +103,13 @@ func BannerCmd(cmd *cli.Cmd) {
 
 	cmd.Action = func() {
 		utils.Workf("Set banner", 0)
-		config := core.Load(".version.toml")
+		config := core.LoadConfig(".version.toml")
 		oldVersion := config.VersionHelper.Version
-		newVersion := core.UpgradeVersion(config, *banner, core.UPGRADE_NO)
+		newVersion, err := core.UpgradeVersion(config, *banner, core.UPGRADE_NO)
+		if err != nil {
+			utils.Errorf("Set banner: "+err.Error(), 1)
+		}
 		config.VersionHelper.Version = newVersion
-		core.Update(".version.toml", oldVersion, config)
+		core.UpdateConfig(".version.toml", oldVersion, config)
 	}
 }
