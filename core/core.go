@@ -163,6 +163,16 @@ func LoadConfig(filePath string) *Config {
 }
 
 func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
+	// ? check working tree if tagFlag is true
+	var wtResult bool
+	var err error
+	if config.VersionHelper.TagFlag {
+		wtResult, err = CheckGit()
+		if err != nil {
+			utils.Errorf(err.Error(), 1)
+		}
+		utils.Checkf("Working tree clean", 1)
+	}
 	// ? update .version.toml
 	s, err := toml.Marshal(config)
 	if err != nil {
@@ -223,22 +233,72 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		}
 		utils.Checkf("Update "+location, 1)
 	}
-	// ? git tag
-	if config.VersionHelper.TagFlag {
-		stat, err := os.Stat(".git")
-		if err != nil {
-			utils.Warningf("Can't find .git directory", 1)
-		} else if !stat.IsDir() {
-			utils.Warningf(".git is not a directory", 1)
-		} else {
-			command := exec.Command("git", "tag", version)
-			command.Start()
-			err = command.Wait() //等待执行完成
-			if err != nil {
-				utils.Errorf("git tag "+version, 1)
-			}
-		}
-		utils.Checkf("git tag "+version, 1)
+	// ? git commit and tag
+	if wtResult && config.VersionHelper.TagFlag {
+		GitCommit(config)
+		GitTag(version)
 	}
 	utils.Celebrationf("Update version to "+version+" !", 0)
+}
+
+//
+func CheckGit() (result bool, err error) {
+	result = false
+	stat, err := os.Stat(".git")
+	if err != nil {
+		return
+	} else if !stat.IsDir() {
+		err = fmt.Errorf(".git is not a directory")
+	}
+	command := exec.Command("git", "status")
+	output, err := command.Output()
+	if err == nil {
+		if strings.Contains(string(output[:]), "nothing to commit, working tree clean") {
+			result = true
+		} else {
+			err = fmt.Errorf("working tree isn't clean / git command not found")
+		}
+	}
+	return
+}
+
+func GitCommit(config *Config) {
+	defer func() {
+		if err := recover(); err != nil {
+			utils.Errorf(err.(error).Error(), 2)
+		}
+	}()
+	utils.Workf("git commit", 1)
+	commandArgs := make([]string, len(config.Operate)+2)
+	commandArgs[0] = "add"
+	commandArgs[1] = ".version.toml"
+	version := config.VersionHelper.Version
+	for i, v := range config.Operate {
+		commandArgs[i+2] = v.Location
+	}
+	commandString := fmt.Sprintf("%s %s", "git", strings.Join(commandArgs, " "))
+	command := exec.Command("git", commandArgs...)
+	err := command.Run()
+	if err != nil {
+		panic(fmt.Errorf("%w (Call Command %s)", err, commandString))
+	}
+	msg := fmt.Sprintf("Update " + version)
+	commandString = fmt.Sprintf("%s %s %s", "git", "commit", "-m "+msg)
+	command = exec.Command("git", "commit", "-m "+msg)
+	err = command.Run()
+	if err != nil {
+		panic(fmt.Errorf("%w (Call Command %s)", err, commandString))
+	}
+	utils.Checkf("add && commit", 2)
+}
+
+func GitTag(version string) {
+	utils.Workf("git tag", 1)
+	command := exec.Command("git", "tag", version)
+	command.Start()
+	err := command.Wait()
+	if err != nil {
+		utils.Errorf(err.Error(), 2)
+	}
+	utils.Checkf("git tag "+version, 2)
 }

@@ -1,4 +1,4 @@
-# Version-Helper-3.0.0
+# Version-Helper-4.0.0
 
 A helper for version manage
 
@@ -49,30 +49,32 @@ In `.version.toml`, you can use \`\` to command execution for `[[Operate]].reple
 ## Depends
 - [go-toml](https://github.com/pelletier/go-toml)
 - [mow-cli](https://github.com/jawher/mow.cli)
-- [goconvey](https://github.com/smartystreets/goconvey)
 
 ## Reference
 [bumpversion](https://github.com/peritus/bumpversion)
 
 ## log
 
+### 4.0.0
+```
+now tag will commit before tag, please make sure your working tree is clean. commit message is 'Update {version}'
+```
+
 ### V3.0.0
 ```
-now will error when you set an invalid version. legal version is [major].[minor].[patch]. 
-
-add serialize columns to .version.toml, And achieve backward compatibility. default pattern is "{version}-{banner}"
-add test
-
-add Depends goconvey
+add test for core functions
+fix a bug that failed when operate.location is empty
+fix a output when tag is true
+```
+### V1.0.2
+```
+remove some noise success message
 ```
 
-### V2.1.0
+### V1.1.0
 ```
-Add new subcommand: info
-
-Usage: version-helper info
-
-Show version information
+Change the regular expression from non-greedy mode to greedy mode
+Change some output
 ```
 
 ### V2.0.0
@@ -90,21 +92,11 @@ Arguments:
 
 ```
 
-### V1.1.0
+### V2.1.0
 ```
-Change the regular expression from non-greedy mode to greedy mode
-Change some output
-```
+Add new subcommand: info
 
-### V1.0.2
-```
-remove some noise success message
-```
+Usage: version-helper info
 
-### V1.0.1
+Show version information
 ```
-fix a bug that failed when operate.location is empty
-fix a output when tag is true
-```
-
-
