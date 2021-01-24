@@ -1,4 +1,4 @@
-# Version-Helper-4.0.0
+# Version-Helper-4.1.0
 
 A helper for version manage
 
@@ -55,6 +55,10 @@ In `.version.toml`, you can use \`\` to command execution for `[[Operate]].reple
 
 ## log
 
+### 4.1.0
+```
+now version-helper will try to guarantee atomicity, it will check config before update
+```
 ### 4.0.0
 ```
 now tag will commit before tag, please make sure your working tree is clean. commit message is 'Update {version}'
@@ -66,15 +70,14 @@ add test for core functions
 fix a bug that failed when operate.location is empty
 fix a output when tag is true
 ```
-### V1.0.2
-```
-remove some noise success message
-```
 
-### V1.1.0
+### V2.1.0
 ```
-Change the regular expression from non-greedy mode to greedy mode
-Change some output
+Add new subcommand: info
+
+Usage: version-helper info
+
+Show version information
 ```
 
 ### V2.0.0
@@ -92,11 +95,13 @@ Arguments:
 
 ```
 
-### V2.1.0
+### V1.1.0
 ```
-Add new subcommand: info
+Change the regular expression from non-greedy mode to greedy mode
+Change some output
+```
 
-Usage: version-helper info
-
-Show version information
+### V1.0.2
+```
+remove some noise success message
 ```

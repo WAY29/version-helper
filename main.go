@@ -8,13 +8,12 @@ import (
 )
 
 const (
-	__version__ = "4.0.0"
+	__version__ = "4.1.0"
 )
 
 func main() {
 	app := cli.App("version-helper", "A helper for version manage")
 	app.Version("v version", "version-helper Version: "+__version__)
-
 	app.Spec = "[-v]"
 
 	app.Command("init", "Create .version.toml to initialize", cmd.InitCmd)
@@ -24,5 +23,6 @@ func main() {
 	app.Command("minor", "Minor version upgrade", cmd.MinorCmd)
 	app.Command("patch", "Patch version upgrade", cmd.PatchCmd)
 	app.Command("banner", "Set banner for version", cmd.BannerCmd)
+
 	app.Run(os.Args)
 }

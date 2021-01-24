@@ -166,6 +166,8 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	// ? check working tree if tagFlag is true
 	var wtResult bool
 	var err error
+	var contentsMap = make(map[string][]byte, len(config.Operate))
+
 	if config.VersionHelper.TagFlag {
 		wtResult, err = CheckGit()
 		if err != nil {
@@ -173,6 +175,27 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		}
 		utils.Checkf("Working tree clean", 1)
 	}
+	// ? guarantee atomicity
+	for i, v := range config.Operate {
+		location, search, _ := v.Location, v.Search, v.Replace
+		search = strings.Replace(search, "{}", oldVersion, -1)
+		if location == "" {
+			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] location invalid", 1)
+		} else if search == "" {
+			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] search invalid", 1)
+		}
+		// ? read file
+		content, err := ioutil.ReadFile(location)
+		if err != nil {
+			utils.Errorf("Check config: "+err.Error(), 1)
+		}
+		// ? whether file contents has search contents
+		if !bytes.Contains(content, []byte(search)) {
+			utils.Errorf("Check config: "+search+" not found", 1)
+		}
+		contentsMap[location] = content
+	}
+
 	// ? update .version.toml
 	s, err := toml.Marshal(config)
 	if err != nil {
@@ -186,21 +209,12 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	utils.Checkf("Update .version.toml", 1)
 
 	version := config.VersionHelper.Version
+
 	// ? update action
 	for _, v := range config.Operate {
 		location, search, replace := v.Location, v.Search, v.Replace
-		if location == "" || search == "" {
-			continue
-		}
-		data, err := ioutil.ReadFile(location)
-		if err != nil {
-			utils.Errorf("Update "+location+": "+err.Error(), 1)
-		}
-		// ? replace search {}
 		search = strings.Replace(search, "{}", oldVersion, -1)
-		if err != nil {
-			utils.Errorf("Update "+location+": "+err.Error(), 1)
-		}
+		content := contentsMap[location]
 		// ? relace `` to execute command
 		shellCommandFlagCount := strings.Count(replace, "`")
 		if shellCommandFlagCount > 0 && shellCommandFlagCount%2 == 0 {
@@ -208,7 +222,6 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 			if err != nil {
 				utils.Errorf("Update "+location+" : "+err.Error(), 1)
 			}
-
 			commandString := reg.FindStringSubmatch(replace)[1]
 			args := strings.Split(commandString, " ")
 			command := exec.Command(args[0], args[1:]...)
@@ -221,13 +234,9 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		}
 		// ? replace replace {}
 		replace = strings.Replace(replace, "{}", version, -1)
-		// ? whether file contents has search contents
-		if !bytes.Contains(data, []byte(search)) {
-			utils.Errorf("Update "+location+" : "+search+" not found", 1)
-		}
 		// ? replace
-		data = bytes.Replace(data, []byte(search), []byte(replace), -1)
-		err = ioutil.WriteFile(location, data, 0666)
+		content = bytes.Replace(content, []byte(search), []byte(replace), -1)
+		err = ioutil.WriteFile(location, content, 0666)
 		if err != nil {
 			utils.Errorf("Update "+location+" : "+err.Error(), 1)
 		}
@@ -241,7 +250,6 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	utils.Celebrationf("Update version to "+version+" !", 0)
 }
 
-//
 func CheckGit() (result bool, err error) {
 	result = false
 	stat, err := os.Stat(".git")
