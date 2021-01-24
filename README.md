@@ -21,6 +21,9 @@ Commands:
 Run 'version-helper COMMAND --help' for more information on a command.
 ```
 
+## Tips
+- Set environment variable LANG contains 'UTF' to enjoy beautiful unicode output!
+
 ## Installation
 just install it by golang 
 

@@ -191,7 +191,7 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		}
 		// ? whether file contents has search contents
 		if !bytes.Contains(content, []byte(search)) {
-			utils.Errorf("Check config: "+search+" not found", 1)
+			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] "+search+" not found", 1)
 		}
 		contentsMap[location] = content
 	}
