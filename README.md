@@ -13,10 +13,12 @@ Options:
 
 Commands:
   init            Create .version.toml to initialize
+  info            Show version information
   set             Set version
   major           Major version upgrade
   minor           Minor version upgrade
   patch           Patch version upgrade
+  banner          Set banner for version
 
 Run 'version-helper COMMAND --help' for more information on a command.
 ```
