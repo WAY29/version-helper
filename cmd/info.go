@@ -13,7 +13,7 @@ func InfoCmd(cmd *cli.Cmd) {
 	cmd.Spec = ""
 
 	cmd.Action = func() {
-		config := core.LoadConfig(".version.toml")
+		config := core.TryLoadConfig(0)
 		fmt.Println("\nVersion:", utils.WrapYellow(config.VersionHelper.Version))
 		tagFlagMsg := strconv.FormatBool(config.VersionHelper.TagFlag)
 		if config.VersionHelper.TagFlag {

@@ -1,4 +1,4 @@
-# Version-Helper-4.1.0
+# Version-Helper-4.2.0
 
 A helper for version manage
 
@@ -58,6 +58,10 @@ In `.version.toml`, you can use \`\` to command execution for `[[Operate]].reple
 
 ## log
 
+### 4.2.0
+```
+now info subcommand will try to find .version.toml recursively from the parent directory
+```
 ### 4.1.0
 ```
 now version-helper will try to guarantee atomicity, it will check config before update

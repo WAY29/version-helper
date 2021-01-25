@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -160,6 +161,43 @@ func LoadConfig(filePath string) *Config {
 	}
 
 	return ParseConfig(data)
+}
+
+func TryLoadConfig(level int) *Config {
+	configPath := FindConfigDir()
+	if configPath == "" {
+		utils.Errorf("Not in version-helper project directory", level)
+	}
+	os.Chdir(filepath.Dir(configPath))
+	config := LoadConfig(configPath)
+	return config
+}
+
+func PathExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}
+
+func FindConfigDir() (configPath string) {
+	configPath = ""
+	currentDir, err := filepath.Abs(".")
+	if err != nil {
+		return
+	}
+	for currentDir != filepath.Dir(currentDir) {
+		configPath = filepath.Join(currentDir, ".version.toml")
+		if PathExists(configPath) {
+			return
+		}
+		currentDir = filepath.Dir(currentDir)
+	}
+	return ""
 }
 
 func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
