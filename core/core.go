@@ -340,7 +340,7 @@ func GitCommit(config *Config) {
 
 func GitTag(version string) {
 	utils.Workf("git tag", 1)
-	command := exec.Command("git", "tag", version)
+	command := exec.Command("git", "tag", "v"+version)
 	command.Start()
 	err := command.Wait()
 	if err != nil {
