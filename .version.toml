@@ -1,6 +1,6 @@
 [main]
   serialize = "{version}-{banner}"
-  tag = false
+  tag = true
   version = "4.2.0"
 
 [[operate]]
@@ -12,11 +12,6 @@
   location = "cmd/selfupdate.go"
   replace = "__version__ = \"{}\""
   search = "__version__ = \"{}\""
-
-[[operate]]
-  location = "releases/build.bat"
-  replace = "version-helper-{}\""
-  search = "version-helper-{}\""
 
 [[operate]]
   location = "README.md"
