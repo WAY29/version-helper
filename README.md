@@ -27,6 +27,8 @@ Run 'version-helper COMMAND --help' for more information on a command.
 - Set environment variable LANG contains 'UTF' to enjoy beautiful unicode output!
 
 ## Installation
+***make sure you can run git command before install it***
+
 just install it by golang 
 
 `go install github.com/WAY29/version-helper@latest`
@@ -68,6 +70,11 @@ In `.version.toml`, you can use \`\` to command execution for `[[Operate]].reple
 [bumpversion](https://github.com/peritus/bumpversion)
 
 ## log
+
+### 4.5.0
+```
+add main.extraCommands for run extraCommands after update version
+```
 
 ### 4.4.1
 ```
