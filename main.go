@@ -23,6 +23,7 @@ func main() {
 	app.Command("minor", "Minor version upgrade", cmd.MinorCmd)
 	app.Command("patch", "Patch version upgrade", cmd.PatchCmd)
 	app.Command("banner", "Set banner for version", cmd.BannerCmd)
+	app.Command("self-update", "Self-update version-helper", cmd.SelfUpdatecmd)
 
 	app.Run(os.Args)
 }
