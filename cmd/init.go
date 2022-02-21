@@ -26,12 +26,12 @@ func InitCmd(cmd *cli.Cmd) {
 	)
 	cmd.Action = func() {
 		s := strings.Replace(tomlTemplate, "{{initVersion}}", *initVersion, 1)
-		utils.Workf("Creating .version.toml...", 0)
+		utils.Work("Creating .version.toml...", 0)
 		err := ioutil.WriteFile(".version.toml", []byte(s), 0666)
 		if err != nil {
-			utils.Errorf("Create .version.toml", 1)
+			utils.Error("Create .version.toml", 1)
 		}
-		utils.Checkf("Create .version.toml", 1)
-		utils.Celebrationf("Init finish, enjot it!", 0)
+		utils.Check("Create .version.toml", 1)
+		utils.Celebration("Init finish, enjot it!", 0)
 	}
 }

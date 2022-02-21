@@ -67,23 +67,23 @@ func printEmoji(msg string, level, flag int) {
 	fmt.Printf("%s%s %s\n", strings.Repeat("  ", level), sign, msg)
 }
 
-func Errorf(msg string, level int) {
+func Error(msg string, level int) {
 	printEmoji(msg, level, FLAG_CANCEL)
 	os.Exit(1)
 }
 
-func Checkf(msg string, level int) {
+func Check(msg string, level int) {
 	printEmoji(msg, level, FLAG_CHECK)
 }
 
-func Celebrationf(msg string, level int) {
+func Celebration(msg string, level int) {
 	printEmoji(msg, level, FLAG_CELEBRATION)
 }
 
-func Workf(msg string, level int) {
+func Work(msg string, level int) {
 	printEmoji(msg, level, FLAG_GEAR)
 }
 
-func Warningf(msg string, level int) {
+func Warning(msg string, level int) {
 	printEmoji(msg, level, FLAG_WARNING)
 }

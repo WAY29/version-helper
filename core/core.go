@@ -85,7 +85,7 @@ func ParseVersion(serialize, oldVersion string) (string, string) {
 	banner := ""
 	resultMap, err := parseVersionBySerialize(serialize, oldVersion)
 	if err != nil {
-		utils.Errorf("Get new verion: "+err.Error(), 1)
+		utils.Error("Get new verion: "+err.Error(), 1)
 	}
 	if resultMap["version"] != "" {
 		version = resultMap["version"]
@@ -128,7 +128,7 @@ func UpgradeVersion(config *Config, banner string, flag int) (string, error) {
 	if flag < UPGRADE_NO {
 		update_int, err := strconv.Atoi(versionSlice[flag])
 		if err != nil {
-			utils.Errorf("Get new version: "+err.Error(), 1)
+			utils.Error("Get new version: "+err.Error(), 1)
 		}
 		update_int += 1
 		versionSlice[flag] = strconv.Itoa(update_int)
@@ -157,7 +157,7 @@ func ParseConfig(data []byte) *Config {
 func LoadConfig(filePath string) *Config {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		utils.Errorf("Load"+filePath+" : "+err.Error(), 1)
+		utils.Error("Load"+filePath+" : "+err.Error(), 1)
 	}
 
 	return ParseConfig(data)
@@ -166,7 +166,7 @@ func LoadConfig(filePath string) *Config {
 func TryLoadConfig(level int) *Config {
 	configPath := FindConfigDir()
 	if configPath == "" {
-		utils.Errorf("Not in version-helper project directory", level)
+		utils.Error("Not in version-helper project directory", level)
 	}
 	os.Chdir(filepath.Dir(configPath))
 	config := LoadConfig(configPath)
@@ -209,27 +209,27 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	if config.VersionHelper.TagFlag {
 		wtResult, err = CheckGit()
 		if err != nil {
-			utils.Errorf(err.Error(), 1)
+			utils.Error(err.Error(), 1)
 		}
-		utils.Checkf("Working tree clean", 1)
+		utils.Check("Working tree clean", 1)
 	}
 	// ? guarantee atomicity
 	for i, v := range config.Operate {
 		location, search, _ := v.Location, v.Search, v.Replace
 		search = strings.Replace(search, "{}", oldVersion, -1)
 		if location == "" {
-			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] location invalid", 1)
+			utils.Error("Check config: ["+strconv.Itoa(i)+"] location invalid", 1)
 		} else if search == "" {
-			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] search invalid", 1)
+			utils.Error("Check config: ["+strconv.Itoa(i)+"] search invalid", 1)
 		}
 		// ? read file
 		content, err := ioutil.ReadFile(location)
 		if err != nil {
-			utils.Errorf("Check config: "+err.Error(), 1)
+			utils.Error("Check config: "+err.Error(), 1)
 		}
 		// ? whether file contents has search contents
 		if !bytes.Contains(content, []byte(search)) {
-			utils.Errorf("Check config: ["+strconv.Itoa(i)+"] "+search+" not found", 1)
+			utils.Error("Check config: ["+strconv.Itoa(i)+"] "+search+" not found", 1)
 		}
 		contentsMap[location] = content
 	}
@@ -237,14 +237,14 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 	// ? update .version.toml
 	s, err := toml.Marshal(config)
 	if err != nil {
-		utils.Errorf("Update .version.toml: "+err.Error(), 1)
+		utils.Error("Update .version.toml: "+err.Error(), 1)
 	}
 	s = bytes.TrimSpace(s)
 	err = ioutil.WriteFile(tomlFilePath, s, 0666)
 	if err != nil {
-		utils.Errorf("Update .version.toml: "+err.Error(), 1)
+		utils.Error("Update .version.toml: "+err.Error(), 1)
 	}
-	utils.Checkf("Update .version.toml", 1)
+	utils.Check("Update .version.toml", 1)
 
 	version := config.VersionHelper.Version
 
@@ -258,14 +258,14 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		if shellCommandFlagCount > 0 && shellCommandFlagCount%2 == 0 {
 			reg, err := regexp.Compile("`(.*?)`")
 			if err != nil {
-				utils.Errorf("Update "+location+" : "+err.Error(), 1)
+				utils.Error("Update "+location+" : "+err.Error(), 1)
 			}
 			commandString := reg.FindStringSubmatch(replace)[1]
 			args := strings.Split(commandString, " ")
 			command := exec.Command(args[0], args[1:]...)
 			output, err := command.Output()
 			if err != nil {
-				utils.Errorf("Update "+location+": "+err.Error(), 1)
+				utils.Error("Update "+location+": "+err.Error(), 1)
 			}
 			outputString := strings.TrimSpace(string(output[:]))
 			replace = reg.ReplaceAllString(replace, outputString)
@@ -276,16 +276,16 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		content = bytes.Replace(content, []byte(search), []byte(replace), -1)
 		err = ioutil.WriteFile(location, content, 0666)
 		if err != nil {
-			utils.Errorf("Update "+location+" : "+err.Error(), 1)
+			utils.Error("Update "+location+" : "+err.Error(), 1)
 		}
-		utils.Checkf("Update "+location, 1)
+		utils.Check("Update "+location, 1)
 	}
 	// ? git commit and tag
 	if wtResult && config.VersionHelper.TagFlag {
 		GitCommit(config)
 		GitTag(version)
 	}
-	utils.Celebrationf("Update version to "+version+" !", 0)
+	utils.Celebration("Update version to "+version+" !", 0)
 }
 
 func CheckGit() (result bool, err error) {
@@ -311,10 +311,10 @@ func CheckGit() (result bool, err error) {
 func GitCommit(config *Config) {
 	defer func() {
 		if err := recover(); err != nil {
-			utils.Errorf(err.(error).Error(), 2)
+			utils.Error(err.(error).Error(), 2)
 		}
 	}()
-	utils.Workf("git commit", 1)
+	utils.Work("git commit", 1)
 	commandArgs := make([]string, len(config.Operate)+2)
 	commandArgs[0] = "add"
 	commandArgs[1] = ".version.toml"
@@ -335,16 +335,16 @@ func GitCommit(config *Config) {
 	if err != nil {
 		panic(fmt.Errorf("%w (Call Command %s)", err, commandString))
 	}
-	utils.Checkf("add && commit", 2)
+	utils.Check("add && commit", 2)
 }
 
 func GitTag(version string) {
-	utils.Workf("git tag", 1)
+	utils.Work("git tag", 1)
 	command := exec.Command("git", "tag", "v"+version)
 	command.Start()
 	err := command.Wait()
 	if err != nil {
-		utils.Errorf(err.Error(), 2)
+		utils.Error(err.Error(), 2)
 	}
-	utils.Checkf("git tag "+version, 2)
+	utils.Check("git tag "+version, 2)
 }
