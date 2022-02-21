@@ -1,20 +1,19 @@
 [main]
-serialize     = "{version}-{banner}"
-tag           = true
-extraCommands = ["git push", "git push --tags"]
-version       = "4.4.1"
+  serialize = "{version}-{banner}"
+  tag = true
+  version = "4.5.0"
 
 [[operate]]
-location = "main.go"
-replace  = "__version__ = \"{}\""
-search   = "__version__ = \"{}\""
+  location = "main.go"
+  replace = "__version__ = \"{}\""
+  search = "__version__ = \"{}\""
 
 [[operate]]
-location = "cmd/selfupdate.go"
-replace  = "__version__ = \"{}\""
-search   = "__version__ = \"{}\""
+  location = "cmd/selfupdate.go"
+  replace = "__version__ = \"{}\""
+  search = "__version__ = \"{}\""
 
 [[operate]]
-location = "README.md"
-replace  = "# Version-Helper-{}"
-search   = "# Version-Helper-{}"
+  location = "README.md"
+  replace = "# Version-Helper-{}"
+  search = "# Version-Helper-{}"
