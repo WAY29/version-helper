@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/WAY29/version-helper/utils"
+	"github.com/google/shlex"
 	toml "github.com/pelletier/go-toml"
 )
 
@@ -31,9 +32,10 @@ type Config struct {
 		Replace  string `toml:"replace"`
 	} `toml:"operate"`
 	VersionHelper struct {
-		Version   string `toml:"version"`
-		TagFlag   bool   `toml:"tag"`
-		Serialize string `toml:"serialize"`
+		Version       string   `toml:"version"`
+		TagFlag       bool     `toml:"tag"`
+		ExtraCommands []string `toml:"extraCommands"`
+		Serialize     string   `toml:"serialize"`
 	} `toml:"main"`
 }
 
@@ -150,6 +152,9 @@ func ParseConfig(data []byte) *Config {
 	// ? 2.1.0 -> 3.0.0 compatible
 	if config.VersionHelper.Serialize == "" {
 		config.VersionHelper.Serialize = "{version}-{banner}"
+	}
+	if config.VersionHelper.ExtraCommands == nil || len(config.VersionHelper.ExtraCommands) == 0 {
+		config.VersionHelper.ExtraCommands = make([]string, 0)
 	}
 	return &config
 }
@@ -285,6 +290,12 @@ func UpdateConfig(tomlFilePath string, oldVersion string, config *Config) {
 		GitCommit(config)
 		GitTag(version)
 	}
+	// ? run extra commands
+	if len(config.VersionHelper.ExtraCommands) > 0 {
+		for _, command := range config.VersionHelper.ExtraCommands {
+			RunExtraCommands(command)
+		}
+	}
 	utils.Celebration("Update version to "+version+" !", 0)
 }
 
@@ -347,4 +358,19 @@ func GitTag(version string) {
 		utils.Error(err.Error(), 2)
 	}
 	utils.Check("git tag "+version, 2)
+}
+
+func RunExtraCommands(command string) {
+	utils.Work(command, 1)
+	args, err := shlex.Split(command)
+	if err != nil {
+		utils.Error(err.Error(), 2)
+	}
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Start()
+	err = cmd.Wait()
+	if err != nil {
+		utils.Error(err.Error(), 2)
+	}
+	utils.Check(command, 2)
 }

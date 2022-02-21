@@ -9,13 +9,14 @@ import (
 )
 
 const tomlTemplate = `[main]
-  version   = "{{initVersion}}"
-  tag       = false
-  serialize = "{version}-{banner}"
+version       = "{{initVersion}}"
+tag           = true
+extraCommands = []
+serialize     = "{version}-{banner}"
 [[operate]]
-  location = "pyproject.toml"
-  search   = "version = \"{}\""
-  replace  = "version = \"{}\""
+location = "pyproject.toml"
+search   = "version = \"{}\""
+replace  = "version = \"{}\""
 `
 
 func InitCmd(cmd *cli.Cmd) {
