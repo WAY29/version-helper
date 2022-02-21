@@ -29,37 +29,51 @@ Run 'version-helper COMMAND --help' for more information on a command.
 ## Installation
 just install it by golang 
 
-`go get github.com/WAY29/version-helper`
+`go install github.com/WAY29/version-helper@latest`
 
 or download releases from github releases
+
+or build it
+
+`go build .`
 
 ## example
 ```
 go get github.com/WAY29/version-helper
 cd project_dir/
 version-helper init ; version is [major].[minor].[patch]-{banner}
-; some bug fixes
+# some bug fixes
 version-helper patch
-; some new updates
+# some new updates
 version-helper minor
-; some major updates with banner
+# some major updates with banner
 version-helper major alpha
-; set banner
+# set banner
 version-helper banner beta
-; show version information
+# show version information
 version-helepr info
+# self-update
+version-helper self-update
 ```
 In `.version.toml`, you can use \`\` to command execution for `[[Operate]].replece` just like bash, but does not support nesting.
 
 ## Depends
 - [go-toml](https://github.com/pelletier/go-toml)
 - [mow-cli](https://github.com/jawher/mow.cli)
+- [blang/semver](https://github.com/blang/semver)
+- [rhysd/go-github-selfupdate](https://github.com/rhysd/go-github-selfupdate)
+- [smartystreets/goconvey](https://github.com/smartystreets/goconvey)
 
 ## Reference
 [bumpversion](https://github.com/peritus/bumpversion)
 
 ## log
 
+### 4.3.0
+```
+add self-update subcommand to update version-helper
+refactor code
+```
 ### 4.2.0
 ```
 now info subcommand will try to find .version.toml recursively from the parent directory
