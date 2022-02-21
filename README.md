@@ -69,6 +69,10 @@ In `.version.toml`, you can use \`\` to command execution for `[[Operate]].reple
 
 ## log
 
+### 4.4.1
+```
+new tag for auto release
+```
 ### 4.4.0
 ```
 add goreleaser to auto release
